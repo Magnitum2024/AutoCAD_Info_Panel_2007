@@ -110,10 +110,10 @@ std::string UserConfigDir() {
 std::string BoundsIniPath() {
     const std::string ini = UserConfigDir() + "\\DwgPropsPanel.ini";
     if (GetFileAttributesA(ini.c_str()) == INVALID_FILE_ATTRIBUTES) {
-        WritePrivateProfileString("Panel", "X", "150", ini.c_str());
-        WritePrivateProfileString("Panel", "Y", "150", ini.c_str());
-        WritePrivateProfileString("Panel", "W", "420", ini.c_str());
-        WritePrivateProfileString("Panel", "H", "560", ini.c_str());
+        WritePrivateProfileStringA("Panel", "X", "150", ini.c_str());
+        WritePrivateProfileStringA("Panel", "Y", "150", ini.c_str());
+        WritePrivateProfileStringA("Panel", "W", "420", ini.c_str());
+        WritePrivateProfileStringA("Panel", "H", "560", ini.c_str());
     }
     return ini;
 }
@@ -193,10 +193,10 @@ void CDwgPropsPanel::Destroy() {
 
 bool CDwgPropsPanel::LoadSavedBounds(int& x, int& y, int& w, int& h) const {
     const std::string ini = BoundsIniPath();
-    const int savedX = GetPrivateProfileInt("Panel", "X", x, ini.c_str());
-    const int savedY = GetPrivateProfileInt("Panel", "Y", y, ini.c_str());
-    const int savedW = GetPrivateProfileInt("Panel", "W", w, ini.c_str());
-    const int savedH = GetPrivateProfileInt("Panel", "H", h, ini.c_str());
+    const int savedX = GetPrivateProfileIntA("Panel", "X", x, ini.c_str());
+    const int savedY = GetPrivateProfileIntA("Panel", "Y", y, ini.c_str());
+    const int savedW = GetPrivateProfileIntA("Panel", "W", w, ini.c_str());
+    const int savedH = GetPrivateProfileIntA("Panel", "H", h, ini.c_str());
 
     if (savedW < 260 || savedH < 220) {
         return false;
@@ -224,19 +224,19 @@ void CDwgPropsPanel::SaveCurrentBounds() const {
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.left);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "X", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "X", buf, ini.c_str());
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.top);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "Y", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "Y", buf, ini.c_str());
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.right - rc.left);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "W", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "W", buf, ini.c_str());
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.bottom - rc.top);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "H", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "H", buf, ini.c_str());
 }
 
 void CDwgPropsPanel::Show() {
