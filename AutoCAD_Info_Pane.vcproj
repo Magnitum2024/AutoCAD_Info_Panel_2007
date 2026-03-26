@@ -40,9 +40,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Visual Studio .NET\Vc7\atlmfc\include&quot;;&quot;D:\ObjectArx\ObjectARX 2006\inc&quot;"
-				AdditionalUsingDirectories="C:\Program Files\Autodesk Architectural Desktop 2006"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP"
+				AdditionalIncludeDirectories="&quot;D:\ObjectArx\ObjectARX 2007\inc&quot;;&quot;C:\Program Files\Microsoft Visual Studio 8\VC\include&quot;;$(VCInstallDir)atlmfc\include;$(ARX2007_SDK_INC)"
+				AdditionalUsingDirectories="$(ARX2007_ACAD_DIR)"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP;_UNICODE;UNICODE;AD_UNICODE;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -68,11 +68,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="rxapi.lib acdb16.lib acge16.lib achapi16.lib acISMobj16.lib acad.lib acedapi.lib adui16.lib acui16.lib"
+				AdditionalDependencies="rxapi.lib acdb17.lib acge17.lib achapi17.lib acismobj17.lib acad.lib acedapi.lib adui17.lib acui17.lib"
 				OutputFile="$(outdir)/gpAutoCAD_Info_Pane.arx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;D:\ObjectArx\ObjectARX 2006\lib&quot;"
+				AdditionalLibraryDirectories="$(ARX2007_SDK_LIB)"
 				LinkDLL="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/AutoCAD_Info_Pane.pdb"
@@ -132,9 +132,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Visual Studio .NET\Vc7\atlmfc\include&quot;;&quot;D:\ObjectArx\ObjectARX 2006\inc&quot;"
-				AdditionalUsingDirectories="C:\Program Files\Autodesk Architectural Desktop 2006"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP"
+				AdditionalIncludeDirectories="&quot;D:\ObjectArx\ObjectARX 2007\inc&quot;;&quot;C:\Program Files\Microsoft Visual Studio 8\VC\include&quot;;$(VCInstallDir)atlmfc\include;$(ARX2007_SDK_INC)"
+				AdditionalUsingDirectories="$(ARX2007_ACAD_DIR)"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP;_UNICODE;UNICODE;AD_UNICODE;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -160,11 +160,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="rxapi.lib acdb16.lib acge16.lib achapi16.lib acISMobj16.lib acad.lib acedapi.lib adui16.lib acui16.lib"
+				AdditionalDependencies="rxapi.lib acdb17.lib acge17.lib achapi17.lib acismobj17.lib acad.lib acedapi.lib adui17.lib acui17.lib"
 				OutputFile="$(outdir)/gpAutoCAD_Info_Pane.arx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;D:\ObjectArx\ObjectARX 2006\lib&quot;"
+				AdditionalLibraryDirectories="$(ARX2007_SDK_LIB)"
 				LinkDLL="true"
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile=""

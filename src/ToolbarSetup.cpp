@@ -442,7 +442,20 @@ void EnsureMgPanelToolbar() {
     IDispatch* menuGroups = vMenuGroups.pdispVal;
     IDispatch* menuGroup = EnsureMgProjectMenuGroup(menuGroups);
     if (menuGroup == NULL) {
-        acutPrintf("\n%s", Utf8ToAcp("MG-Panel: группа меню не загружена и файл меню не найден.").c_str());
+        const std::string msgA = Utf8ToAcp("MG-Panel: группа меню не загружена и файл меню не найден.");
+#ifdef AD_UNICODE
+        int wlen = MultiByteToWideChar(CP_ACP, 0, msgA.c_str(), -1, NULL, 0);
+        std::wstring msgW;
+        if (wlen > 0) {
+            msgW.resize(wlen - 1);
+            MultiByteToWideChar(CP_ACP, 0, msgA.c_str(), -1, &msgW[0], wlen);
+            acutPrintf(ACRX_T("\n%s"), msgW.c_str());
+        } else {
+            acutPrintf(ACRX_T("\nMG-Panel: menu group not loaded and menu file not found."));
+        }
+#else
+        acutPrintf("\n%s", msgA.c_str());
+#endif
         menuGroups->Release();
         acad->Release();
         return;
