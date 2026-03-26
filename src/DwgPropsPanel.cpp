@@ -73,6 +73,10 @@ std::string Utf8ToAcp(const char* utf8) {
     return a;
 }
 
+bool IsInternalDwgMetaKey(const std::string& key) {
+    return key == "__MG_XLSX_LAST_FILE_FULLPATH" || key == "__MG_XLSX_LAST_FILE_CRC32";
+}
+
 void PrintUtf8(const char* fmtUtf8, ...) {
     std::string fmt = Utf8ToAcp(fmtUtf8);
 
@@ -429,9 +433,7 @@ void CDwgPropsPanel::ReloadProperties() {
     AcDbDatabaseSummaryInfo* pInfo = NULL;
     if (acdbGetSummaryInfo(pDb, pInfo) == Acad::eOk && pInfo != NULL) {
         const int customCount = pInfo->numCustomInfo();
-        if (customCount > 0) {
-            AddProperty(Utf8ToAcp("---------------- ПОЛЬЗОВАТЕЛЬСКИЕ СВОЙСТВА DWG ----------------").c_str(), "", false);
-        }
+        bool separatorAdded = false;
 
         for (int i = 0; i < customCount; ++i) {
             ACHAR* key = NULL;
@@ -439,6 +441,21 @@ void CDwgPropsPanel::ReloadProperties() {
             if (pInfo->getCustomSummaryInfo(i, key, val) == Acad::eOk) {
                 std::string desc;
                 const std::string keyLocal = ToLocal8(key);
+                if (IsInternalDwgMetaKey(keyLocal)) {
+                    if (key != NULL) {
+                        acdbFree(key);
+                        key = NULL;
+                    }
+                    if (val != NULL) {
+                        acdbFree(val);
+                        val = NULL;
+                    }
+                    continue;
+                }
+                if (!separatorAdded) {
+                    AddProperty(Utf8ToAcp("---------------- ПОЛЬЗОВАТЕЛЬСКИЕ СВОЙСТВА DWG ----------------").c_str(), "", false);
+                    separatorAdded = true;
+                }
                 Xlsx2DwgProp_GetDescriptionForKey(keyLocal, desc);
                 std::string group;
                 Xlsx2DwgProp_GetGroupForKey(keyLocal, group);
