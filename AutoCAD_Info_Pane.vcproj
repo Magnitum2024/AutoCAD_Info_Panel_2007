@@ -21,7 +21,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="2"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,9 +41,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;D:\ObjectArx\ObjectARX 2007\inc&quot;;&quot;c:\Program Files\Microsoft Visual Studio 8\VC\include\&quot;"
-				AdditionalUsingDirectories="&quot;C:\Program Files\Autodesk\MDT 2007&quot;"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP"
+				AdditionalIncludeDirectories="$(VCInstallDir)atlmfc\include;$(ARX2007_SDK_INC)"
+				AdditionalUsingDirectories="$(ARX2007_ACAD_DIR)"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -73,7 +73,7 @@
 				OutputFile="$(outdir)/gpAutoCAD_Info_Pane.arx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;D:\ObjectArx\ObjectARX 2007\lib&quot;"
+				AdditionalLibraryDirectories="$(ARX2007_SDK_LIB)"
 				LinkDLL="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/AutoCAD_Info_Pane.pdb"
@@ -113,7 +113,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="2"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -135,7 +135,7 @@
 				Optimization="2"
 				AdditionalIncludeDirectories="$(VCInstallDir)atlmfc\include;$(ARX2007_SDK_INC)"
 				AdditionalUsingDirectories="$(ARX2007_ACAD_DIR)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
