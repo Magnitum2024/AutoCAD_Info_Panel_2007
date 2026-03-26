@@ -15,7 +15,7 @@ std::string ToLocal8(const ACHAR* text) {
         return "";
     }
 
-#ifdef _UNICODE
+#ifdef AD_UNICODE
     const int sizeNeeded = WideCharToMultiByte(CP_ACP, 0, text, -1, NULL, 0, NULL, NULL);
     if (sizeNeeded <= 0) {
         return "";
@@ -27,6 +27,24 @@ std::string ToLocal8(const ACHAR* text) {
     return out;
 #else
     return std::string(text);
+#endif
+}
+
+std::basic_string<ACHAR> AcpToAChar(const char* text) {
+    if (text == NULL || text[0] == '\0') {
+        return std::basic_string<ACHAR>();
+    }
+#ifdef AD_UNICODE
+    int wlen = MultiByteToWideChar(CP_ACP, 0, text, -1, NULL, 0);
+    if (wlen <= 0) {
+        return std::basic_string<ACHAR>();
+    }
+    std::basic_string<ACHAR> w;
+    w.resize(wlen - 1);
+    MultiByteToWideChar(CP_ACP, 0, text, -1, &w[0], wlen);
+    return w;
+#else
+    return std::basic_string<ACHAR>(text);
 #endif
 }
 
@@ -67,7 +85,8 @@ void PrintUtf8(const char* fmtUtf8, ...) {
     va_end(args);
 
     out[sizeof(out) - 1] = '\0';
-    acutPrintf("%s", out);
+    const std::basic_string<ACHAR> msg = AcpToAChar(out);
+    acutPrintf(ACRX_T("%s"), msg.c_str());
 }
 
 std::string UserConfigDir() {
@@ -91,10 +110,10 @@ std::string UserConfigDir() {
 std::string BoundsIniPath() {
     const std::string ini = UserConfigDir() + "\\DwgPropsPanel.ini";
     if (GetFileAttributesA(ini.c_str()) == INVALID_FILE_ATTRIBUTES) {
-        WritePrivateProfileString("Panel", "X", "150", ini.c_str());
-        WritePrivateProfileString("Panel", "Y", "150", ini.c_str());
-        WritePrivateProfileString("Panel", "W", "420", ini.c_str());
-        WritePrivateProfileString("Panel", "H", "560", ini.c_str());
+        WritePrivateProfileStringA("Panel", "X", "150", ini.c_str());
+        WritePrivateProfileStringA("Panel", "Y", "150", ini.c_str());
+        WritePrivateProfileStringA("Panel", "W", "420", ini.c_str());
+        WritePrivateProfileStringA("Panel", "H", "560", ini.c_str());
     }
     return ini;
 }
@@ -112,7 +131,7 @@ bool CDwgPropsPanel::Create() {
         return true;
     }
 
-    WNDCLASS wc;
+    WNDCLASSA wc;
     ZeroMemory(&wc, sizeof(wc));
     wc.lpfnWndProc = CDwgPropsPanel::WndProc;
     wc.hInstance = GetModuleHandle(NULL);
@@ -120,7 +139,7 @@ bool CDwgPropsPanel::Create() {
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
 
-    RegisterClass(&wc);
+    RegisterClassA(&wc);
 
     HWND owner = GetForegroundWindow();
 
@@ -131,7 +150,7 @@ bool CDwgPropsPanel::Create() {
     LoadSavedBounds(x, y, w, h);
 
     const std::string wndTitle = Utf8ToAcp("Свойства DWG");
-    m_hWnd = CreateWindowEx(
+    m_hWnd = CreateWindowExA(
         WS_EX_TOOLWINDOW,
         wc.lpszClassName,
         wndTitle.c_str(),
@@ -174,10 +193,10 @@ void CDwgPropsPanel::Destroy() {
 
 bool CDwgPropsPanel::LoadSavedBounds(int& x, int& y, int& w, int& h) const {
     const std::string ini = BoundsIniPath();
-    const int savedX = GetPrivateProfileInt("Panel", "X", x, ini.c_str());
-    const int savedY = GetPrivateProfileInt("Panel", "Y", y, ini.c_str());
-    const int savedW = GetPrivateProfileInt("Panel", "W", w, ini.c_str());
-    const int savedH = GetPrivateProfileInt("Panel", "H", h, ini.c_str());
+    const int savedX = GetPrivateProfileIntA("Panel", "X", x, ini.c_str());
+    const int savedY = GetPrivateProfileIntA("Panel", "Y", y, ini.c_str());
+    const int savedW = GetPrivateProfileIntA("Panel", "W", w, ini.c_str());
+    const int savedH = GetPrivateProfileIntA("Panel", "H", h, ini.c_str());
 
     if (savedW < 260 || savedH < 220) {
         return false;
@@ -205,19 +224,19 @@ void CDwgPropsPanel::SaveCurrentBounds() const {
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.left);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "X", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "X", buf, ini.c_str());
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.top);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "Y", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "Y", buf, ini.c_str());
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.right - rc.left);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "W", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "W", buf, ini.c_str());
 
     _snprintf(buf, sizeof(buf) - 1, "%d", rc.bottom - rc.top);
     buf[sizeof(buf) - 1] = '\0';
-    WritePrivateProfileString("Panel", "H", buf, ini.c_str());
+    WritePrivateProfileStringA("Panel", "H", buf, ini.c_str());
 }
 
 void CDwgPropsPanel::Show() {
@@ -246,7 +265,7 @@ void CDwgPropsPanel::RefreshTrackedXlsxState(bool force) {
     std::string fullPath;
     bool mismatch = false;
     if (!Xlsx2DwgProp_GetTrackedFileStatus(fileName, fullPath, mismatch)) {
-        SetWindowText(m_hLblTrackedXlsx, "");
+        SetWindowTextA(m_hLblTrackedXlsx, "");
         m_trackedXlsxHashMismatch = false;
         InvalidateRect(m_hLblTrackedXlsx, NULL, TRUE);
         return;
@@ -254,7 +273,7 @@ void CDwgPropsPanel::RefreshTrackedXlsxState(bool force) {
 
     std::string label = Utf8ToAcp("XLSX-файл: ");
     label += fileName;
-    SetWindowText(m_hLblTrackedXlsx, label.c_str());
+    SetWindowTextA(m_hLblTrackedXlsx, label.c_str());
     m_trackedXlsxHashMismatch = mismatch;
     InvalidateRect(m_hLblTrackedXlsx, NULL, TRUE);
 }
@@ -279,18 +298,18 @@ void CDwgPropsPanel::RebuildGroupFilter() {
     if (m_hComboGroup == NULL) return;
 
     const std::string allGroupsText = Utf8ToAcp("Все группы");
-    SendMessage(m_hComboGroup, CB_RESETCONTENT, 0, 0);
-    SendMessage(m_hComboGroup, CB_ADDSTRING, 0, (LPARAM)allGroupsText.c_str());
+    SendMessageA(m_hComboGroup, CB_RESETCONTENT, 0, 0);
+    SendMessageA(m_hComboGroup, CB_ADDSTRING, 0, (LPARAM)allGroupsText.c_str());
 
     std::vector<std::string> groups;
     Xlsx2DwgProp_GetGroups(groups);
     for (size_t i = 0; i < groups.size(); ++i) {
         if (!groups[i].empty()) {
-            SendMessage(m_hComboGroup, CB_ADDSTRING, 0, (LPARAM)groups[i].c_str());
+            SendMessageA(m_hComboGroup, CB_ADDSTRING, 0, (LPARAM)groups[i].c_str());
         }
     }
 
-    SendMessage(m_hComboGroup, CB_SETCURSEL, 0, 0);
+    SendMessageA(m_hComboGroup, CB_SETCURSEL, 0, 0);
 }
 
 void CDwgPropsPanel::RebuildVisibleList() {
@@ -301,7 +320,7 @@ void CDwgPropsPanel::RebuildVisibleList() {
     char filterBuf[256];
     filterBuf[0] = '\0';
     if (m_hEditSearch != NULL) {
-        GetWindowText(m_hEditSearch, filterBuf, sizeof(filterBuf) - 1);
+        GetWindowTextA(m_hEditSearch, filterBuf, sizeof(filterBuf) - 1);
     }
     std::string filter = filterBuf;
     for (size_t i = 0; i < filter.size(); ++i) {
@@ -310,15 +329,15 @@ void CDwgPropsPanel::RebuildVisibleList() {
         }
     }
 
-    SendMessage(m_hList, LB_RESETCONTENT, 0, 0);
+    SendMessageA(m_hList, LB_RESETCONTENT, 0, 0);
     m_items.clear();
 
     char groupBuf[256];
     groupBuf[0] = '\0';
     if (m_hComboGroup != NULL) {
-        const int sel = (int)SendMessage(m_hComboGroup, CB_GETCURSEL, 0, 0);
+        const int sel = (int)SendMessageA(m_hComboGroup, CB_GETCURSEL, 0, 0);
         if (sel >= 0) {
-            SendMessage(m_hComboGroup, CB_GETLBTEXT, sel, (LPARAM)groupBuf);
+            SendMessageA(m_hComboGroup, CB_GETLBTEXT, sel, (LPARAM)groupBuf);
         }
     }
     const std::string selectedGroup = groupBuf;
@@ -347,13 +366,14 @@ void CDwgPropsPanel::RebuildVisibleList() {
         std::string line(src.key);
         line += "	";
         line += src.value;
-        SendMessage(m_hList, LB_ADDSTRING, 0, (LPARAM)line.c_str());
+        SendMessageA(m_hList, LB_ADDSTRING, 0, (LPARAM)line.c_str());
     }
 }
 
 std::string CDwgPropsPanel::ReadSysVarAsString(const char* varName) const {
     resbuf rb;
-    if (acedGetVar(varName, &rb) != RTNORM) {
+    const std::basic_string<ACHAR> aVarName = AcpToAChar(varName);
+    if (acedGetVar(aVarName.c_str(), &rb) != RTNORM) {
         return Utf8ToAcp("<н/д>");
     }
 
@@ -374,7 +394,7 @@ std::string CDwgPropsPanel::ReadSysVarAsString(const char* varName) const {
             buf[sizeof(buf) - 1] = '\0';
             break;
         case RTSTR: {
-            std::string s = rb.resval.rstring != NULL ? rb.resval.rstring : "";
+            std::string s = ToLocal8(rb.resval.rstring);
             if (rb.resval.rstring != NULL) {
                 acdbFree(rb.resval.rstring);
             }
@@ -392,7 +412,7 @@ void CDwgPropsPanel::ReloadProperties() {
         return;
     }
 
-    SendMessage(m_hList, LB_RESETCONTENT, 0, 0);
+    SendMessageA(m_hList, LB_RESETCONTENT, 0, 0);
     m_allItems.clear();
     m_items.clear();
 
@@ -525,15 +545,15 @@ void CDwgPropsPanel::DrawListItem(const DRAWITEMSTRUCT* dis) {
     rcVal.bottom -= 2;
 
     HFONT old = (HFONT)SelectObject(hdc, m_fontNameBold != NULL ? m_fontNameBold : GetStockObject(DEFAULT_GUI_FONT));
-    DrawText(hdc, key.c_str(), -1, &rcKey, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
+    DrawTextA(hdc, key.c_str(), -1, &rcKey, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
 
     if (!desc.empty() && rcDesc.left < rcDesc.right) {
         SelectObject(hdc, m_fontDesc != NULL ? m_fontDesc : GetStockObject(DEFAULT_GUI_FONT));
-        DrawText(hdc, desc.c_str(), -1, &rcDesc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
+        DrawTextA(hdc, desc.c_str(), -1, &rcDesc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
     }
 
     SelectObject(hdc, m_fontValue != NULL ? m_fontValue : GetStockObject(DEFAULT_GUI_FONT));
-    DrawText(hdc, val.c_str(), -1, &rcVal, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
+    DrawTextA(hdc, val.c_str(), -1, &rcVal, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
 
     SelectObject(hdc, old);
 
@@ -544,11 +564,11 @@ void CDwgPropsPanel::DrawListItem(const DRAWITEMSTRUCT* dis) {
 
 bool CDwgPropsPanel::IsTextInputActive() const {
     resbuf rb;
-    if (acedGetVar("CMDNAMES", &rb) != RTNORM || rb.restype != RTSTR || rb.resval.rstring == NULL) {
+    if (acedGetVar(ACRX_T("CMDNAMES"), &rb) != RTNORM || rb.restype != RTSTR || rb.resval.rstring == NULL) {
         return false;
     }
 
-    std::string cmd = rb.resval.rstring;
+    std::string cmd = ToLocal8(rb.resval.rstring);
     acdbFree(rb.resval.rstring);
 
     for (size_t i = 0; i < cmd.size(); ++i) {
@@ -589,10 +609,10 @@ bool CDwgPropsPanel::PasteTextToAcad(const std::string& text) {
     CopyTextToClipboard(text);
 
     if (m_lastTextInputHwnd != NULL && IsWindow(m_lastTextInputHwnd)) {
-        if (SendMessage(m_lastTextInputHwnd, EM_REPLACESEL, TRUE, (LPARAM)text.c_str()) != 0) {
+        if (SendMessageA(m_lastTextInputHwnd, EM_REPLACESEL, TRUE, (LPARAM)text.c_str()) != 0) {
             return true;
         }
-        if (SendMessage(m_lastTextInputHwnd, WM_PASTE, 0, 0) != 0) {
+        if (SendMessageA(m_lastTextInputHwnd, WM_PASTE, 0, 0) != 0) {
             return true;
         }
     }
@@ -605,7 +625,7 @@ void CDwgPropsPanel::UpdateInsertButtonState() {
     if (m_hBtnInsertField == NULL || m_hList == NULL) return;
 
     bool enabled = false;
-    const int sel = (int)SendMessage(m_hList, LB_GETCURSEL, 0, 0);
+    const int sel = (int)SendMessageA(m_hList, LB_GETCURSEL, 0, 0);
     if (sel >= 0 && sel < (int)m_items.size()) {
         enabled = m_items[sel].isCustom && (IsTextInputActive() || (m_lastTextInputHwnd != NULL && IsWindow(m_lastTextInputHwnd)));
     }
@@ -637,7 +657,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_CREATE: {
             SetTimer(m_hWnd, 1, 250, NULL);
 
-            m_hList = CreateWindowEx(
+            m_hList = CreateWindowExA(
                 WS_EX_CLIENTEDGE,
                 "LISTBOX",
                 "",
@@ -651,7 +671,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 GetModuleHandle(NULL),
                 NULL);
 
-            m_hEditSearch = CreateWindowEx(
+            m_hEditSearch = CreateWindowExA(
                 WS_EX_CLIENTEDGE,
                 "EDIT",
                 "",
@@ -665,7 +685,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 GetModuleHandle(NULL),
                 NULL);
 
-            m_hComboGroup = CreateWindowEx(
+            m_hComboGroup = CreateWindowExA(
                 WS_EX_CLIENTEDGE,
                 "COMBOBOX",
                 "",
@@ -679,7 +699,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 GetModuleHandle(NULL),
                 NULL);
 
-            m_hLblTrackedXlsx = CreateWindowEx(
+            m_hLblTrackedXlsx = CreateWindowExA(
                 0,
                 "STATIC",
                 "",
@@ -694,7 +714,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 NULL);
 
             const std::string btnLoadText = Utf8ToAcp("Загрузить параметры из XLSX");
-            m_hBtnLoadXlsx = CreateWindowEx(
+            m_hBtnLoadXlsx = CreateWindowExA(
                 0,
                 "BUTTON",
                 btnLoadText.c_str(),
@@ -709,7 +729,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 NULL);
 
             const std::string btnInsertText = Utf8ToAcp("Вставить выбранное пользовательское ПОЛЕ");
-            m_hBtnInsertField = CreateWindowEx(
+            m_hBtnInsertField = CreateWindowExA(
                 0,
                 "BUTTON",
                 btnInsertText.c_str(),
@@ -742,7 +762,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             m_fontValue = CreateFontIndirect(&lf);
 
             if (m_hLblTrackedXlsx != NULL) {
-                SendMessage(m_hLblTrackedXlsx, WM_SETFONT, (WPARAM)(m_fontDesc != NULL ? m_fontDesc : GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+                SendMessageA(m_hLblTrackedXlsx, WM_SETFONT, (WPARAM)(m_fontDesc != NULL ? m_fontDesc : GetStockObject(DEFAULT_GUI_FONT)), TRUE);
             }
 
             RebuildGroupFilter();
@@ -817,7 +837,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 UpdateInsertButtonState();
             }
             if (LOWORD(wParam) == 1003 && HIWORD(wParam) == BN_CLICKED) {
-                const int sel = (int)SendMessage(m_hList, LB_GETCURSEL, 0, 0);
+                const int sel = (int)SendMessageA(m_hList, LB_GETCURSEL, 0, 0);
                 if (sel >= 0 && sel < (int)m_items.size() && m_items[sel].isCustom) {
                     std::string fieldCode = "%<\\AcVar CustomDP." + m_items[sel].key + " \\f \"%tc1\">%";
                     PasteTextToAcad(fieldCode);
