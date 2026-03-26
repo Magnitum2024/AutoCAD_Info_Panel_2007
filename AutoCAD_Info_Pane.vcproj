@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="AutoCAD_Info_Pane"
 	ProjectGUID="{4106AFB6-1F86-4433-AE47-7E2DBFC80C6F}"
+	RootNamespace="AutoCAD_Info_Pane"
 	>
 	<Platforms>
 		<Platform
@@ -20,7 +21,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="2"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -112,7 +113,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="2"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
