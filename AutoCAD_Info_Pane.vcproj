@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="AutoCAD_Info_Pane"
 	ProjectGUID="{4106AFB6-1F86-4433-AE47-7E2DBFC80C6F}"
+	RootNamespace="AutoCAD_Info_Pane"
 	>
 	<Platforms>
 		<Platform
@@ -40,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(VCInstallDir)atlmfc\include;$(ARX2007_SDK_INC)"
-				AdditionalUsingDirectories="$(ARX2007_ACAD_DIR)"
+				AdditionalIncludeDirectories="&quot;D:\ObjectArx\ObjectARX 2007\inc&quot;;&quot;c:\Program Files\Microsoft Visual Studio 8\VC\include\&quot;"
+				AdditionalUsingDirectories="&quot;C:\Program Files\Autodesk\MDT 2007&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;AUTOCAD_INFO_PANE_MODULE;_AFXEXT;_ACRXAPP"
 				StringPooling="false"
 				MinimalRebuild="true"
@@ -72,7 +73,7 @@
 				OutputFile="$(outdir)/gpAutoCAD_Info_Pane.arx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(ARX2007_SDK_LIB)"
+				AdditionalLibraryDirectories="&quot;D:\ObjectArx\ObjectARX 2007\lib&quot;"
 				LinkDLL="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/AutoCAD_Info_Pane.pdb"
