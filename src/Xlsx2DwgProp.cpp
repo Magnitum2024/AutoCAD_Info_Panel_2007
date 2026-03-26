@@ -95,7 +95,7 @@ std::string HResultHex(HRESULT hr) {
 std::string ModuleDir() {
     char path[MAX_PATH];
     path[0] = '\0';
-    GetModuleFileName(NULL, path, MAX_PATH);
+    GetModuleFileNameA(NULL, path, MAX_PATH);
 
     std::string p(path);
     const std::string::size_type pos = p.find_last_of("\\/");
@@ -246,17 +246,17 @@ ImportSettings LoadSettings() {
 
     char buf[256];
     buf[0] = '\0';
-    GetPrivateProfileString("XLSX", "WorksheetName", st.worksheetName.c_str(), buf, sizeof(buf), st.configPath.c_str());
+    GetPrivateProfileStringA("XLSX", "WorksheetName", st.worksheetName.c_str(), buf, sizeof(buf), st.configPath.c_str());
     if (buf[0] != '\0') {
         st.worksheetName = buf;
     }
 
-    st.keyColumn = GetPrivateProfileInt("XLSX", "KeyColumn", (int)st.keyColumn, st.configPath.c_str());
-    st.valueColumn = GetPrivateProfileInt("XLSX", "ValueColumn", (int)st.valueColumn, st.configPath.c_str());
-    st.worksheetIndex = GetPrivateProfileInt("XLSX", "WorksheetIndex", (int)st.worksheetIndex, st.configPath.c_str());
-    GetPrivateProfileString("XLSX", "Reader", st.reader.c_str(), buf, sizeof(buf), st.configPath.c_str());
+    st.keyColumn = GetPrivateProfileIntA("XLSX", "KeyColumn", (int)st.keyColumn, st.configPath.c_str());
+    st.valueColumn = GetPrivateProfileIntA("XLSX", "ValueColumn", (int)st.valueColumn, st.configPath.c_str());
+    st.worksheetIndex = GetPrivateProfileIntA("XLSX", "WorksheetIndex", (int)st.worksheetIndex, st.configPath.c_str());
+    GetPrivateProfileStringA("XLSX", "Reader", st.reader.c_str(), buf, sizeof(buf), st.configPath.c_str());
     if (buf[0] != '\0') st.reader = buf;
-    GetPrivateProfileString("XLSX", "LibreOfficePath", st.libreOfficePath.c_str(), buf, sizeof(buf), st.configPath.c_str());
+    GetPrivateProfileStringA("XLSX", "LibreOfficePath", st.libreOfficePath.c_str(), buf, sizeof(buf), st.configPath.c_str());
     if (buf[0] != '\0') st.libreOfficePath = buf;
 
     if (st.keyColumn <= 0) st.keyColumn = 2;
@@ -804,12 +804,12 @@ void Xlsx2DwgProp_Command() {
         num[sizeof(num) - 1] = '\0';
 
         const std::string ini = PanelIniPath();
-        WritePrivateProfileString("XLSX", "LastFileName", FileNameOnly(fn).c_str(), ini.c_str());
-        WritePrivateProfileString("XLSX", "LastFileFullPath", fn, ini.c_str());
-        WritePrivateProfileString("XLSX", "LastFileDir", FileDirOnly(fn).c_str(), ini.c_str());
-        WritePrivateProfileString("XLSX", "LastFileCrc32", num, ini.c_str());
-        if (GetPrivateProfileInt("XLSX", "HashCheckMinutes", 0, ini.c_str()) <= 0) {
-            WritePrivateProfileString("XLSX", "HashCheckMinutes", "10", ini.c_str());
+        WritePrivateProfileStringA("XLSX", "LastFileName", FileNameOnly(fn).c_str(), ini.c_str());
+        WritePrivateProfileStringA("XLSX", "LastFileFullPath", fn, ini.c_str());
+        WritePrivateProfileStringA("XLSX", "LastFileDir", FileDirOnly(fn).c_str(), ini.c_str());
+        WritePrivateProfileStringA("XLSX", "LastFileCrc32", num, ini.c_str());
+        if (GetPrivateProfileIntA("XLSX", "HashCheckMinutes", 0, ini.c_str()) <= 0) {
+            WritePrivateProfileStringA("XLSX", "HashCheckMinutes", "10", ini.c_str());
         }
     }
     PrintUtf8("\nИмпорт из XLSX завершен: %s", fn);
@@ -834,7 +834,7 @@ bool Xlsx2DwgProp_GetTrackedFileStatus(std::string& fileNameOnly, std::string& f
     const std::string ini = PanelIniPath();
     char pathBuf[MAX_PATH];
     pathBuf[0] = '\0';
-    GetPrivateProfileString("XLSX", "LastFileFullPath", "", pathBuf, sizeof(pathBuf), ini.c_str());
+    GetPrivateProfileStringA("XLSX", "LastFileFullPath", "", pathBuf, sizeof(pathBuf), ini.c_str());
     if (pathBuf[0] == '\0') {
         return false;
     }
@@ -842,7 +842,7 @@ bool Xlsx2DwgProp_GetTrackedFileStatus(std::string& fileNameOnly, std::string& f
     fullPath = pathBuf;
     fileNameOnly = FileNameOnly(fullPath);
 
-    const unsigned long stored = (unsigned long)GetPrivateProfileInt("XLSX", "LastFileCrc32", 0, ini.c_str());
+    const unsigned long stored = (unsigned long)GetPrivateProfileIntA("XLSX", "LastFileCrc32", 0, ini.c_str());
     bool ok = false;
     const unsigned long current = Crc32File(fullPath, ok);
     if (!ok) {
@@ -855,7 +855,7 @@ bool Xlsx2DwgProp_GetTrackedFileStatus(std::string& fileNameOnly, std::string& f
 
 int Xlsx2DwgProp_GetHashCheckMinutes() {
     const std::string ini = PanelIniPath();
-    int m = GetPrivateProfileInt("XLSX", "HashCheckMinutes", 10, ini.c_str());
+    int m = GetPrivateProfileIntA("XLSX", "HashCheckMinutes", 10, ini.c_str());
     if (m <= 0) m = 10;
     return m;
 }
