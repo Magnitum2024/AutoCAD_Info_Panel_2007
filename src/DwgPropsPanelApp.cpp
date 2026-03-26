@@ -10,7 +10,7 @@
 
 namespace {
 
-const char* kCmdGroup = "DWG_PROPS_PANEL_CMDS";
+const ACHAR* kCmdGroup = ACRX_T("DWG_PROPS_PANEL_CMDS");
 CDwgPropsPanel g_panel;
 
 void InitLocaleForCyrillic() {
@@ -43,9 +43,9 @@ void DwgPropsPanel_Init(void* pkt) {
 
     acrxUnlockApplication(pkt);
     acrxRegisterAppMDIAware(pkt);
-    acedRegCmds->addCommand(kCmdGroup, "SHOWDWGPROPS", "SHOWDWGPROPS", ACRX_CMD_MODAL, CmdShow);
-    acedRegCmds->addCommand(kCmdGroup, "HIDEDWGPROPS", "HIDEDWGPROPS", ACRX_CMD_MODAL, CmdHide);
-    acedRegCmds->addCommand(kCmdGroup, "XLSX2DWGPROP", "XLSX2DWGPROP", ACRX_CMD_MODAL, CmdImportXlsx);
+    acedRegCmds->addCommand(kCmdGroup, ACRX_T("SHOWDWGPROPS"), ACRX_T("SHOWDWGPROPS"), ACRX_CMD_MODAL, CmdShow);
+    acedRegCmds->addCommand(kCmdGroup, ACRX_T("HIDEDWGPROPS"), ACRX_T("HIDEDWGPROPS"), ACRX_CMD_MODAL, CmdHide);
+    acedRegCmds->addCommand(kCmdGroup, ACRX_T("XLSX2DWGPROP"), ACRX_T("XLSX2DWGPROP"), ACRX_CMD_MODAL, CmdImportXlsx);
 
     EnsureMgPanelToolbar();
 }

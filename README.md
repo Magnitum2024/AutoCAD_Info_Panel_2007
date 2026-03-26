@@ -71,10 +71,11 @@ virtual AcRx::AppRetCode On_kUnloadAppMsg(void *pkt) {
    - `ARX2007_SDK_LIB` → `<ObjectARX 2007 SDK>\lib`;
    - `ARX2007_ACAD_DIR` → каталог установки AutoCAD 2007.
 3. Проверьте, что в Linker используются библиотеки версии 2007: `acdb17.lib`, `acge17.lib`, `achapi17.lib`, `acismobj17.lib`, `adui17.lib`, `acui17.lib`.
-4. Для конфигураций Debug/Release используйте Character Set = **Multi-Byte Character Set (MBCS)** (для ObjectARX 2007 в этом проекте это обязательное условие).
-5. Соберите `.arx`, загрузите через `APPLOAD` в AutoCAD 2007.
-6. Выполните `SHOWDWGPROPS`.
-7. Для импорта `XLSX2DWGPROP` откроется стандартный Windows-диалог выбора файла `.xlsx`.
+4. Для конфигураций Debug/Release используйте Unicode-сборку (`Character Set = Use Unicode Character Set`) и убедитесь, что заданы `_UNICODE`, `UNICODE` и `AD_UNICODE`.
+5. Строковые литералы для вызовов ObjectARX передавайте как `ACHAR` (например, через `ACRX_T("...")`) или через явную конвертацию ACP/UTF-8 → `ACHAR`.
+6. Соберите `.arx`, загрузите через `APPLOAD` в AutoCAD 2007.
+7. Выполните `SHOWDWGPROPS`.
+8. Для импорта `XLSX2DWGPROP` откроется стандартный Windows-диалог выбора файла `.xlsx`.
 
 ## Примечание
 
