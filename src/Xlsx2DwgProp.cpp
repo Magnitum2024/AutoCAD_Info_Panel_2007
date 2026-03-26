@@ -50,7 +50,19 @@ void PrintUtf8(const char* fmtUtf8, ...) {
     va_end(args);
 
     out[sizeof(out) - 1] = '\0';
+#ifdef AD_UNICODE
+    int wlen = MultiByteToWideChar(CP_ACP, 0, out, -1, NULL, 0);
+    if (wlen > 0) {
+        std::wstring outW;
+        outW.resize(wlen - 1);
+        MultiByteToWideChar(CP_ACP, 0, out, -1, &outW[0], wlen);
+        acutPrintf(ACRX_T("%s"), outW.c_str());
+    } else {
+        acutPrintf(ACRX_T("%s"), ACRX_T(""));
+    }
+#else
     acutPrintf("%s", out);
+#endif
 }
 
 struct PropPair {
@@ -62,6 +74,10 @@ struct PropPair {
 std::map<std::string, std::string> g_lastDescriptions;
 std::map<std::string, std::string> g_lastGroups;
 std::string g_lastReadError;
+const char* kTrackPathKey = "__MG_XLSX_LAST_FILE_FULLPATH";
+const char* kTrackCrcKey = "__MG_XLSX_LAST_FILE_CRC32";
+
+std::basic_string<ACHAR> ToAChar(const std::string& s);
 
 struct ImportSettings {
     std::string worksheetName;
@@ -83,7 +99,7 @@ std::string HResultHex(HRESULT hr) {
 std::string ModuleDir() {
     char path[MAX_PATH];
     path[0] = '\0';
-    GetModuleFileName(NULL, path, MAX_PATH);
+    GetModuleFileNameA(NULL, path, MAX_PATH);
 
     std::string p(path);
     const std::string::size_type pos = p.find_last_of("\\/");
@@ -135,6 +151,78 @@ std::string FileDirOnly(const std::string& fullPath) {
     const std::string::size_type p = fullPath.find_last_of("\\/");
     if (p == std::string::npos) return std::string(".");
     return fullPath.substr(0, p);
+}
+
+std::string FromAChar(const ACHAR* text) {
+    if (text == NULL) return std::string();
+#ifdef AD_UNICODE
+    const int n = WideCharToMultiByte(CP_ACP, 0, text, -1, NULL, 0, NULL, NULL);
+    if (n <= 0) return std::string();
+    std::string out;
+    out.resize(n - 1);
+    WideCharToMultiByte(CP_ACP, 0, text, -1, &out[0], n, NULL, NULL);
+    return out;
+#else
+    return std::string(text);
+#endif
+}
+
+Acad::ErrorStatus SetOrAddCustom(AcDbDatabaseSummaryInfo* pInfo, const std::string& key, const std::string& value) {
+    const std::basic_string<ACHAR> wk = ToAChar(key);
+    const std::basic_string<ACHAR> wv = ToAChar(value);
+    Acad::ErrorStatus es = pInfo->setCustomSummaryInfo(wk.c_str(), wv.c_str());
+    if (es != Acad::eOk) {
+        es = pInfo->addCustomSummaryInfo(wk.c_str(), wv.c_str());
+    }
+    return es;
+}
+
+bool SaveTrackedFileInfoToDwg(const std::string& fullPath, unsigned long crc) {
+    AcDbDatabase* pDb = acdbHostApplicationServices()->workingDatabase();
+    if (pDb == NULL) return false;
+
+    AcDbDatabaseSummaryInfo* pInfo = NULL;
+    if (acdbGetSummaryInfo(pDb, pInfo) != Acad::eOk || pInfo == NULL) return false;
+
+    char crcBuf[64];
+    _snprintf(crcBuf, sizeof(crcBuf) - 1, "%lu", crc);
+    crcBuf[sizeof(crcBuf) - 1] = '\0';
+
+    Acad::ErrorStatus es1 = SetOrAddCustom(pInfo, kTrackPathKey, fullPath);
+    Acad::ErrorStatus es2 = SetOrAddCustom(pInfo, kTrackCrcKey, crcBuf);
+    Acad::ErrorStatus putEs = acdbPutSummaryInfo(pInfo);
+    delete pInfo;
+    return es1 == Acad::eOk && es2 == Acad::eOk && putEs == Acad::eOk;
+}
+
+bool LoadTrackedFileInfoFromDwg(std::string& fullPath, unsigned long& crc) {
+    fullPath.clear();
+    crc = 0;
+
+    AcDbDatabase* pDb = acdbHostApplicationServices()->workingDatabase();
+    if (pDb == NULL) return false;
+
+    AcDbDatabaseSummaryInfo* pInfo = NULL;
+    if (acdbGetSummaryInfo(pDb, pInfo) != Acad::eOk || pInfo == NULL) return false;
+
+    const int customCount = pInfo->numCustomInfo();
+    for (int i = 0; i < customCount; ++i) {
+        ACHAR* key = NULL;
+        ACHAR* val = NULL;
+        if (pInfo->getCustomSummaryInfo(i, key, val) == Acad::eOk) {
+            const std::string k = FromAChar(key);
+            const std::string v = FromAChar(val);
+            if (k == kTrackPathKey) {
+                fullPath = v;
+            } else if (k == kTrackCrcKey) {
+                crc = (unsigned long)strtoul(v.c_str(), NULL, 10);
+            }
+        }
+        if (key != NULL) acdbFree(key);
+        if (val != NULL) acdbFree(val);
+    }
+    delete pInfo;
+    return !fullPath.empty();
 }
 
 unsigned long Crc32File(const std::string& path, bool& ok) {
@@ -234,17 +322,17 @@ ImportSettings LoadSettings() {
 
     char buf[256];
     buf[0] = '\0';
-    GetPrivateProfileString("XLSX", "WorksheetName", st.worksheetName.c_str(), buf, sizeof(buf), st.configPath.c_str());
+    GetPrivateProfileStringA("XLSX", "WorksheetName", st.worksheetName.c_str(), buf, sizeof(buf), st.configPath.c_str());
     if (buf[0] != '\0') {
         st.worksheetName = buf;
     }
 
-    st.keyColumn = GetPrivateProfileInt("XLSX", "KeyColumn", (int)st.keyColumn, st.configPath.c_str());
-    st.valueColumn = GetPrivateProfileInt("XLSX", "ValueColumn", (int)st.valueColumn, st.configPath.c_str());
-    st.worksheetIndex = GetPrivateProfileInt("XLSX", "WorksheetIndex", (int)st.worksheetIndex, st.configPath.c_str());
-    GetPrivateProfileString("XLSX", "Reader", st.reader.c_str(), buf, sizeof(buf), st.configPath.c_str());
+    st.keyColumn = GetPrivateProfileIntA("XLSX", "KeyColumn", (int)st.keyColumn, st.configPath.c_str());
+    st.valueColumn = GetPrivateProfileIntA("XLSX", "ValueColumn", (int)st.valueColumn, st.configPath.c_str());
+    st.worksheetIndex = GetPrivateProfileIntA("XLSX", "WorksheetIndex", (int)st.worksheetIndex, st.configPath.c_str());
+    GetPrivateProfileStringA("XLSX", "Reader", st.reader.c_str(), buf, sizeof(buf), st.configPath.c_str());
     if (buf[0] != '\0') st.reader = buf;
-    GetPrivateProfileString("XLSX", "LibreOfficePath", st.libreOfficePath.c_str(), buf, sizeof(buf), st.configPath.c_str());
+    GetPrivateProfileStringA("XLSX", "LibreOfficePath", st.libreOfficePath.c_str(), buf, sizeof(buf), st.configPath.c_str());
     if (buf[0] != '\0') st.libreOfficePath = buf;
 
     if (st.keyColumn <= 0) st.keyColumn = 2;
@@ -297,7 +385,7 @@ std::wstring Utf16(const std::string& s) {
 
 
 std::basic_string<ACHAR> ToAChar(const std::string& s) {
-#ifdef _UNICODE
+#ifdef AD_UNICODE
     std::wstring w = Utf16(s);
     return std::basic_string<ACHAR>(w.c_str());
 #else
@@ -711,7 +799,7 @@ void ApplyProps(const std::vector<PropPair>& props) {
     }
 
     PrintUtf8("\nСвойств записано: %d, ошибок: %d.", ok, err);
-    acedCommand(RTSTR, "_.REGEN", RTNONE);
+    acedCommand(RTSTR, ACRX_T("_.REGEN"), RTNONE);
 }
 
 }  // namespace
@@ -720,7 +808,7 @@ void Xlsx2DwgProp_Command() {
     char fn[MAX_PATH];
     fn[0] = '\0';
 
-    OPENFILENAME ofn;
+    OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = GetForegroundWindow();
@@ -732,7 +820,7 @@ void Xlsx2DwgProp_Command() {
     std::string dlgTitle = Utf8ToAcp("Выберите XLSX файл");
     ofn.lpstrTitle = dlgTitle.c_str();
 
-    if (!GetOpenFileName(&ofn)) {
+    if (!GetOpenFileNameA(&ofn)) {
         PrintUtf8("\nИмпорт из XLSX отменен.");
         return;
     }
@@ -787,17 +875,8 @@ void Xlsx2DwgProp_Command() {
     bool hashOk = false;
     const unsigned long crc = Crc32File(fn, hashOk);
     if (hashOk) {
-        char num[64];
-        _snprintf(num, sizeof(num) - 1, "%lu", crc);
-        num[sizeof(num) - 1] = '\0';
-
-        const std::string ini = PanelIniPath();
-        WritePrivateProfileString("XLSX", "LastFileName", FileNameOnly(fn).c_str(), ini.c_str());
-        WritePrivateProfileString("XLSX", "LastFileFullPath", fn, ini.c_str());
-        WritePrivateProfileString("XLSX", "LastFileDir", FileDirOnly(fn).c_str(), ini.c_str());
-        WritePrivateProfileString("XLSX", "LastFileCrc32", num, ini.c_str());
-        if (GetPrivateProfileInt("XLSX", "HashCheckMinutes", 0, ini.c_str()) <= 0) {
-            WritePrivateProfileString("XLSX", "HashCheckMinutes", "10", ini.c_str());
+        if (!SaveTrackedFileInfoToDwg(fn, crc)) {
+            PrintUtf8("\nПредупреждение: не удалось сохранить путь/CRC XLSX в свойства DWG.");
         }
     }
     PrintUtf8("\nИмпорт из XLSX завершен: %s", fn);
@@ -819,18 +898,11 @@ bool Xlsx2DwgProp_GetTrackedFileStatus(std::string& fileNameOnly, std::string& f
     fileNameOnly.clear();
     fullPath.clear();
 
-    const std::string ini = PanelIniPath();
-    char pathBuf[MAX_PATH];
-    pathBuf[0] = '\0';
-    GetPrivateProfileString("XLSX", "LastFileFullPath", "", pathBuf, sizeof(pathBuf), ini.c_str());
-    if (pathBuf[0] == '\0') {
+    unsigned long stored = 0;
+    if (!LoadTrackedFileInfoFromDwg(fullPath, stored)) {
         return false;
     }
-
-    fullPath = pathBuf;
     fileNameOnly = FileNameOnly(fullPath);
-
-    const unsigned long stored = (unsigned long)GetPrivateProfileInt("XLSX", "LastFileCrc32", 0, ini.c_str());
     bool ok = false;
     const unsigned long current = Crc32File(fullPath, ok);
     if (!ok) {
@@ -843,7 +915,7 @@ bool Xlsx2DwgProp_GetTrackedFileStatus(std::string& fileNameOnly, std::string& f
 
 int Xlsx2DwgProp_GetHashCheckMinutes() {
     const std::string ini = PanelIniPath();
-    int m = GetPrivateProfileInt("XLSX", "HashCheckMinutes", 10, ini.c_str());
+    int m = GetPrivateProfileIntA("XLSX", "HashCheckMinutes", 10, ini.c_str());
     if (m <= 0) m = 10;
     return m;
 }
