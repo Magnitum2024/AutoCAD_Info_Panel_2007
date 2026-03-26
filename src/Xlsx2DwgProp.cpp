@@ -50,7 +50,19 @@ void PrintUtf8(const char* fmtUtf8, ...) {
     va_end(args);
 
     out[sizeof(out) - 1] = '\0';
+#ifdef AD_UNICODE
+    int wlen = MultiByteToWideChar(CP_ACP, 0, out, -1, NULL, 0);
+    if (wlen > 0) {
+        std::wstring outW;
+        outW.resize(wlen - 1);
+        MultiByteToWideChar(CP_ACP, 0, out, -1, &outW[0], wlen);
+        acutPrintf(ACRX_T("%s"), outW.c_str());
+    } else {
+        acutPrintf(ACRX_T("%s"), ACRX_T(""));
+    }
+#else
     acutPrintf("%s", out);
+#endif
 }
 
 struct PropPair {
@@ -297,7 +309,7 @@ std::wstring Utf16(const std::string& s) {
 
 
 std::basic_string<ACHAR> ToAChar(const std::string& s) {
-#ifdef _UNICODE
+#ifdef AD_UNICODE
     std::wstring w = Utf16(s);
     return std::basic_string<ACHAR>(w.c_str());
 #else
@@ -711,7 +723,7 @@ void ApplyProps(const std::vector<PropPair>& props) {
     }
 
     PrintUtf8("\nСвойств записано: %d, ошибок: %d.", ok, err);
-    acedCommand(RTSTR, "_.REGEN", RTNONE);
+    acedCommand(RTSTR, ACRX_T("_.REGEN"), RTNONE);
 }
 
 }  // namespace
@@ -720,7 +732,7 @@ void Xlsx2DwgProp_Command() {
     char fn[MAX_PATH];
     fn[0] = '\0';
 
-    OPENFILENAME ofn;
+    OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = GetForegroundWindow();
@@ -732,7 +744,7 @@ void Xlsx2DwgProp_Command() {
     std::string dlgTitle = Utf8ToAcp("Выберите XLSX файл");
     ofn.lpstrTitle = dlgTitle.c_str();
 
-    if (!GetOpenFileName(&ofn)) {
+    if (!GetOpenFileNameA(&ofn)) {
         PrintUtf8("\nИмпорт из XLSX отменен.");
         return;
     }
