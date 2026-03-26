@@ -1,6 +1,6 @@
 # AutoCAD_Info_Panel
 
-ObjectARX-плагин для AutoCAD 2005, который создаёт отдельную панель-окно и выводит в ней список параметров DWG.
+ObjectARX-плагин для AutoCAD 2007, который создаёт отдельную панель-окно и выводит в ней список параметров DWG.
 
 ## Что реализовано
 
@@ -31,6 +31,13 @@ ObjectARX-плагин для AutoCAD 2005, который создаёт отд
 - `HIDE` → `HIDEDWGPROPS`
 Файл `MG-Project.mnu` оформлен в классическом формате toolbar (`_Toolbar` / `_Button`) с привязкой BMP-иконок `Loadpanel16/32.bmp` и `UnLoadpanel16/32.bmp`.
 
+
+## Миграция на AutoCAD 2007 (выполнено в проекте)
+
+- Проект `AutoCAD_Info_Pane.vcproj` переведён на линковку с библиотеками ObjectARX 2007 (`acdb17/acge17/...`).
+- Жёстко заданные локальные пути к SDK 2006 заменены на переменные окружения (`ARX2007_SDK_INC`, `ARX2007_SDK_LIB`, `ARX2007_ACAD_DIR`), чтобы сборка была переносимой между машинами.
+- Исходный код оставлен совместимым с текущей архитектурой плагина; дальнейшее развитие можно делать без повторной ручной миграции проекта.
+
 ## Важно для интеграции в существующий ARX-проект
 
 Этот модуль **не содержит** собственного `acrxEntryPoint`.
@@ -58,12 +65,16 @@ virtual AcRx::AppRetCode On_kUnloadAppMsg(void *pkt) {
 
 ## Подключение
 
-1. Создайте ARX-проект в Visual C++ 2002/2005.
-2. Добавьте файлы из `src`.
-3. Подключите ObjectARX SDK библиотеки.
-4. Соберите `.arx`, загрузите через `APPLOAD`.
-5. Выполните `SHOWDWGPROPS`.
-6. Для импорта `XLSX2DWGPROP` откроется стандартный Windows-диалог выбора файла `.xlsx`.
+1. Откройте `AutoCAD_Info_Pane.sln` в Visual Studio 2005.
+2. В *Tools → Options → Projects and Solutions → VC++ Directories* (или через переменные окружения) задайте пути:
+   - `ARX2007_SDK_INC` → `<ObjectARX 2007 SDK>\inc`;
+   - `ARX2007_SDK_LIB` → `<ObjectARX 2007 SDK>\lib`;
+   - `ARX2007_ACAD_DIR` → каталог установки AutoCAD 2007.
+3. Проверьте, что в Linker используются библиотеки версии 2007: `acdb17.lib`, `acge17.lib`, `achapi17.lib`, `acismobj17.lib`, `adui17.lib`, `acui17.lib`.
+4. Для конфигураций Debug/Release используйте Character Set = **Multi-Byte Character Set (MBCS)** (для ObjectARX 2007 в этом проекте это обязательное условие).
+5. Соберите `.arx`, загрузите через `APPLOAD` в AutoCAD 2007.
+6. Выполните `SHOWDWGPROPS`.
+7. Для импорта `XLSX2DWGPROP` откроется стандартный Windows-диалог выбора файла `.xlsx`.
 
 ## Примечание
 
