@@ -149,7 +149,7 @@ bool CDwgPropsPanel::Create() {
     int h = 560;
     LoadSavedBounds(x, y, w, h);
 
-    const std::string wndTitle = Utf8ToAcp("Свойства DWG");
+    const std::string wndTitle = "DWG Properties";
     m_hWnd = CreateWindowExA(
         WS_EX_TOOLWINDOW,
         wc.lpszClassName,
@@ -430,7 +430,7 @@ void CDwgPropsPanel::ReloadProperties() {
     if (acdbGetSummaryInfo(pDb, pInfo) == Acad::eOk && pInfo != NULL) {
         const int customCount = pInfo->numCustomInfo();
         if (customCount > 0) {
-            AddProperty("---------------- ПОЛЬЗОВАТЕЛЬСКИЕ СВОЙСТВА DWG ----------------", "", false);
+            AddProperty(Utf8ToAcp("---------------- ПОЛЬЗОВАТЕЛЬСКИЕ СВОЙСТВА DWG ----------------").c_str(), "", false);
         }
 
         for (int i = 0; i < customCount; ++i) {
@@ -728,7 +728,7 @@ LRESULT CDwgPropsPanel::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 GetModuleHandle(NULL),
                 NULL);
 
-            const std::string btnInsertText = Utf8ToAcp("Вставить выбранное пользовательское ПОЛЕ");
+            const std::string btnInsertText = Utf8ToAcp("Вставить поле");
             m_hBtnInsertField = CreateWindowExA(
                 0,
                 "BUTTON",
