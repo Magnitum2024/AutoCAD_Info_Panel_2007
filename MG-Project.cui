@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+Внимание! Не изменяйте содержимое этого файла вручную в обычном редакторе XML.
+Для изменения используйте CUI-редактор AutoCAD.
+-->
+<CustSection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <FileVersion MajorVersion="0" MinorVersion="1" IncrementalVersion="3" UserVersion="1" />
+  <Header>
+    <CommonConfiguration>
+      <CommonItems>
+        <Revision MajorVersion="16" MinorVersion="2" UserVersion="1" />
+      </CommonItems>
+    </CommonConfiguration>
+    <WorkspaceRoot>
+      <WorkspaceConfigRoot />
+    </WorkspaceRoot>
+  </Header>
+  <MenuGroup Name="MG-PROJECT">
+    <MacroGroup Name="MG-ProjectMacros">
+      <MenuMacro UID="MG_SHOW_DWGPROPS" Label="SHOW" Macro="^C^CSHOWDWGPROPS " />
+      <MenuMacro UID="MG_HIDE_DWGPROPS" Label="HIDE" Macro="^C^CHIDEDWGPROPS " />
+    </MacroGroup>
+    <MenuRoot>
+      <AcceleratorRoot />
+      <OverrideRoot />
+      <MouseButtonRoot />
+      <DigitizerButtonRoot />
+      <PopMenuRoot />
+      <ToolbarRoot>
+        <Toolbar Name="MG-Panel" Alias="MG_PANEL" UID="MG_PANEL_TOOLBAR">
+          <ToolbarButton MacroUID="MG_SHOW_DWGPROPS" />
+          <ToolbarButton MacroUID="MG_HIDE_DWGPROPS" />
+        </Toolbar>
+      </ToolbarRoot>
+      <ScreenMenuRoot />
+      <ImageMenuRoot />
+      <TabletMenuRoot />
+    </MenuRoot>
+  </MenuGroup>
+</CustSection>

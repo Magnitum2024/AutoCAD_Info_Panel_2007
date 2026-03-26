@@ -1,0 +1,8 @@
+***MENUGROUP=MG-PROJECT
+
+***TOOLBARS
+
+**MG-Panel
+ID_MGPanel_0 [_Toolbar("MG-Panel", _Floating, _Show, 300, 200, 1)]
+ID_MGPanel_Show [_Button("Show DWG Properties panel", "Loadpanel16.bmp", "Loadpanel32.bmp")]^C^CSHOWDWGPROPS
+ID_MGPanel_Hide [_Button("Hide DWG Properties panel", "UnLoadpanel16.bmp", "UnLoadpanel32.bmp")]^C^CHIDEDWGPROPS
